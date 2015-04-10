@@ -1,4 +1,4 @@
-SRC = omp_solved2.c omp_solved3.c
+SRC = omp_solved2.c omp_solved3.c omp_solved4.c
 EXE = $(SRC:.c=)
 
 
