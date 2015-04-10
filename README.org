@@ -1,0 +1,4 @@
+* bugs
+
+There is no runtime error with omp_bug3.c, and the output makes
+sense. Not sure what to do here.
