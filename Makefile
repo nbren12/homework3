@@ -3,7 +3,7 @@ EXE = $(SRC:.c=)
 
 
 CC     = gcc-4.9
-CFLAGS = -fopenmp
+CFLAGS += -fopenmp -O3
 
 all: bugs serial parallel
 
@@ -12,3 +12,7 @@ bugs: $(EXE)
 serial: jacobi gs
 
 parallel: jacobi-omp gs-omp
+
+
+clean:
+	rm -f jacobi jacobi-omp gs gs-omp $(EXE)  
