@@ -26,11 +26,13 @@ double calc_resid(int N, double h2, double* f, double *u){
 void jacobi_laplace(int N, double h2, double *f, double *u, double *uc){
   int i;
 
+  #pragma omp for
   for (i = 1; i < N-1; i++) {
     uc[i] = u[i];
   }
 
 
+  #pragma omp for
   for (i = 1; i < N-1; i++) {
     u[i] = (h2 * f[i] + uc[i-1] + uc[i+1])/2.0;
   }
@@ -69,11 +71,16 @@ int main(int argc, char *argv[])
   resid_cur = resid_init;
   printf("%f\n", resid_init);
   
-  
+#pragma omp parallel default(shared)
+  {
+    
   while (resid_cur / resid_init > STOP_ITER_RAT){
     
-    u[0] = 0.0;
-    u[n_per_proc - 1] = 0.0;
+    #pragma omp single
+    {
+      u[0] = 0.0;
+      u[n_per_proc - 1] = 0.0;
+    }
     
     jacobi_laplace(n_per_proc, h2, f, u, uc);
 
@@ -81,6 +88,7 @@ int main(int argc, char *argv[])
     printf("Resid is %f\n", resid_cur );
   }
 
+  }
   // deallocate
   free(f);
   free(u);
