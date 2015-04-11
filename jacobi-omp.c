@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "util.h"
 
 #define STOP_ITER_RAT 10e-6
 #define OMEGA_OVER_RELAXED 1.5
@@ -14,7 +15,7 @@ double calc_resid(int N, double h2, double* f, double *u){
 
   
 
-#pragma omp parallel for reduction(+:resid) private(i,ai) default(shared)
+#pragma omp parallel for reduction(+:resid) private(ai)
   for (i = 1; i < N-1; i++) {
     ai = (- u[i+1] + 2 * u[i] - u[i-1])/h2 -f[i];
     resid += ai*ai;
@@ -27,7 +28,7 @@ double calc_resid(int N, double h2, double* f, double *u){
 void jacobi_laplace(int N, double h2, double *f, double *u, double *uc){
   int i;
 
-#pragma omp parallel private(i) default(shared)
+#pragma omp parallel
   {
     
   #pragma omp for
@@ -47,11 +48,12 @@ void jacobi_laplace(int N, double h2, double *f, double *u, double *uc){
 int main(int argc, char *argv[])
 {
 
-  if (argc < 2){
+  if (argc < 3){
     printf("Arguments required, Quitting...\n");
     return 1;
   }
   int N = atoi(argv[1]);
+  int max_iter = atoi(argv[2]);
   double h2 = 1.0/(N+1)/(N+1);
   double *u, *uc, *f;
 
@@ -76,18 +78,28 @@ int main(int argc, char *argv[])
   resid_cur = resid_init;
   printf("%f\n", resid_init);
   
- 
+  int iter = 0;
+
+  timestamp_type t1, t2;
+
+  get_timestamp(&t1);
   while (resid_cur / resid_init > STOP_ITER_RAT){
     
-    resid_cur = 0.0;
+    /* resid_cur = 0.0; */
     u[0] = 0.0;
     u[n_per_proc - 1] = 0.0;
     jacobi_laplace(n_per_proc, h2, f, u, uc);
     
     resid_cur = calc_resid(n_per_proc, h2, f, u);
     printf("Resid is %f\n", resid_cur );
+    
+    if (++iter > max_iter) break;
 
   }
+  get_timestamp(&t2);
+
+
+  printf("Total time: %f\n", timestamp_diff_in_seconds(t1,t2));
   // deallocate
   free(f);
   free(u);

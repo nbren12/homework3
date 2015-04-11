@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "util.h"
+
 #define STOP_ITER_RAT 10e-6
 #define OMEGA_OVER_RELAXED 1.5
 
@@ -40,11 +42,12 @@ void jacobi_laplace(int N, double h2, double *f, double *u, double *uc){
 int main(int argc, char *argv[])
 {
 
-  if (argc < 2){
+  if (argc < 3){
     printf("Arguments required, Quitting...\n");
     return 1;
   }
   int N = atoi(argv[1]);
+  int max_iter = atoi(argv[2]);
   double h2 = 1.0/(N+1)/(N+1);
   double *u, *uc, *f;
 
@@ -69,7 +72,11 @@ int main(int argc, char *argv[])
   resid_cur = resid_init;
   printf("%f\n", resid_init);
   
-  
+  int iter = 0;
+
+  timestamp_type t1, t2;
+
+  get_timestamp(&t1);
   while (resid_cur / resid_init > STOP_ITER_RAT){
     
     u[0] = 0.0;
@@ -79,8 +86,13 @@ int main(int argc, char *argv[])
 
     resid_cur = calc_resid(n_per_proc, h2, f, u);
     printf("Resid is %f\n", resid_cur );
+    
+    if (++iter > max_iter) break;
   }
+  get_timestamp(&t2);
 
+
+  printf("Total time: %f\n", timestamp_diff_in_seconds(t1,t2));
   // deallocate
   free(f);
   free(u);
