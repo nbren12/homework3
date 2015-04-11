@@ -26,13 +26,13 @@ double calc_resid(int N, double* f, double *u){
   return sqrt(resid);
 }
 
-void gauss_seidel_laplace(int N, double *f, double *u){
+void gauss_seidel_laplace_redblack(int N, int start, double *f, double *u){
   int i;
   double h2 = 1.0/(N+1)/(N+1);
 
   u[0] =  (h2 * f[0] + u[1])/2.0;
 
-  for (i = 1; i < N-1; i++) {
+  for (i = start; i < N-1; i+=2) {
     u[i] = (h2 * f[i] + u[i-1] + u[i+1])/2.0;
   }
 
@@ -88,7 +88,8 @@ int main(int argc, char *argv[])
   
   while (resid_cur / resid_init > STOP_ITER_RAT){
     
-    gauss_seidel_laplace(N, f, u);
+    gauss_seidel_laplace_redblack(N, 0, f, u);
+    gauss_seidel_laplace_redblack(N, 1, f, u);
 
     resid_cur = calc_resid(N, f, u);
     printf("Resid is %f\n", resid_cur );
