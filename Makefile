@@ -5,7 +5,7 @@ EXE = $(SRC:.c=)
 CC     = gcc-4.9
 CFLAGS = -fopenmp
 
-all: bugs serial
+all: bugs serial parallel
 
 bugs: $(EXE)
 
